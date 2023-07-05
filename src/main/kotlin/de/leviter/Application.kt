@@ -10,6 +10,8 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import java.io.File
+import java.nio.file.Files
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
@@ -17,6 +19,16 @@ fun main() {
 }
 
 fun Application.module() {
+    val file = File("openapi/documentation.yaml")
+
+    if (!file.exists())
+        file.mkdir()
+
+    Application::class.java.getResourceAsStream("/openapi/documentation.yaml").use {
+        if (it != null)
+            Files.copy(it, file.toPath())
+    }
+
     install(CORS) {
         anyHost()
         allowHeader(HttpHeaders.ContentType)
